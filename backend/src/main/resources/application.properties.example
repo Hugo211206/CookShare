@@ -1,0 +1,23 @@
+# Port du serveur
+server.port=8080
+
+# Configuration PostgreSQL
+spring.datasource.url=jdbc:postgresql://localhost:5432/cookshare_db
+spring.datasource.username=USERNAME
+spring.datasource.password=PASSWORD
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# Configuration JPA/Hibernate
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Configuration Cloudinary
+cloudinary.cloud-name=CLOUD_NAMEgmai
+cloudinary.api-key=API_KEY
+cloudinary.api-secret=API_SECRET
+
+# Taille maximale des fichiers uploadés
+spring.servlet.multipart.max-file-size=150MB
+spring.servlet.multipart.max-request-size=150MB
