@@ -40,10 +40,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 2. Extraire le token
         final String jwt = authHeader.substring(7);
-        final String userEmail = jwtService.extractEmail(jwt);
+
+        String userEmail = null;
+        try {
+            userEmail = jwtService.extractEmail(jwt);
+        } catch (Exception e) {
+            // Token expiré ou invalide — on laisse passer sans authentifier
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 3. Vérifier si l'utilisateur n'est pas déjà authentifié
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
 
             // 4. Charger l'utilisateur
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);

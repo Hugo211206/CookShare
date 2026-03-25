@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/ingredient")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class IngredientController {
 
     private final IngredientService ingredientService;
@@ -68,5 +68,10 @@ public class IngredientController {
         return ingredientService.findIngredientByNom(nom)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Ingredient>> searchIngredients(@RequestParam String nom) {
+        return ResponseEntity.ok(ingredientService.searchIngredients(nom));
     }
 }

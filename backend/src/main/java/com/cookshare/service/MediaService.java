@@ -4,7 +4,9 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cookshare.entity.Media;
 import com.cookshare.entity.Recette;
+import com.cookshare.entity.Utilisateur;
 import com.cookshare.repository.MediaRepository;
+import com.cookshare.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,8 @@ public class MediaService {
     private final Cloudinary cloudinary;
     private final RecetteService recetteService;
     private final MediaRepository mediaRepository;
+    private final UtilisateurRepository utilisateurRepository;
+
 
     public Media uploadImageForRecette(Long recetteId, MultipartFile file) throws IOException {
 
@@ -77,4 +81,19 @@ public class MediaService {
 
         return pathWithExtension;
     }
+
+    public String uploadAvatarForUtilisateur(Long utilisateurId, MultipartFile file) throws IOException {
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                ObjectUtils.asMap("folder", "cookshare/avatars"));
+
+        String url = (String) uploadResult.get("secure_url");
+
+        com.cookshare.entity.Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        utilisateur.setPhotoProfilUrl(url);
+        utilisateurRepository.save(utilisateur);
+
+        return url;
+    }
+
 }

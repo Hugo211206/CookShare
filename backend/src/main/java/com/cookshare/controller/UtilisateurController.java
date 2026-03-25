@@ -17,16 +17,6 @@ public class UtilisateurController {
 
     private final UtilisateurService utilisateurService;
 
-    @PostMapping
-    public ResponseEntity<Utilisateur> creerUtilisateur(@RequestBody Utilisateur utilisateur) {
-        try {
-            Utilisateur nouvelUtilisateur = utilisateurService.creerUtilisateur(utilisateur);
-            return new ResponseEntity<>(nouvelUtilisateur, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
     @GetMapping
     public ResponseEntity<List<Utilisateur>> getAllUtilisateurs() {
         List<Utilisateur> utilisateurs = utilisateurService.getAllUtilisateurs();

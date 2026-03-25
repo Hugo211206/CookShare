@@ -12,7 +12,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/favoris")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class FavoriController {
 
     private final FavoriService favoriService;

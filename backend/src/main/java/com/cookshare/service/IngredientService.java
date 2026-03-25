@@ -54,4 +54,8 @@ public class IngredientService {
     public Optional<Ingredient> findIngredientById(Long id) {
         return ingredientRepository.findById(id);
     }
+
+    public List<Ingredient> searchIngredients(String nom) {
+        return ingredientRepository.findByNomContainingIgnoreCase(nom);
+    }
 }

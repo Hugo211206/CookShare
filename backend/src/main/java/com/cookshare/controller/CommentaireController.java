@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/commentaires")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class CommentaireController {
 
     private final CommentaireService commentaireService;

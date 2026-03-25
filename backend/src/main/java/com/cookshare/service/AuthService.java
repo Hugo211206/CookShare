@@ -22,21 +22,16 @@ public class AuthService {
     private final EmailService emailService;
     private final VerificationTokenService verificationTokenService;
 
-    /**
-     * Inscription d'un nouvel utilisateur
-     */
+
     public AuthResponse register(RegisterRequest request) {
-        // Vérifier si l'email existe déjà
+
         if (utilisateurRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Cet email est déjà utilisé");
         }
-
-        // Vérifier si le pseudo existe déjà
         if (utilisateurRepository.existsByPseudo(request.getPseudo())) {
             throw new RuntimeException("Ce pseudo est déjà utilisé");
         }
 
-        // Créer l'utilisateur
         Utilisateur utilisateur = new Utilisateur();
         utilisateur.setPseudo(request.getPseudo());
         utilisateur.setNom(request.getNom());
@@ -47,56 +42,43 @@ public class AuthService {
 
         utilisateur = utilisateurRepository.save(utilisateur);
 
-        // Créer le token de vérification
         VerificationToken verificationToken = verificationTokenService.createVerificationToken(utilisateur);
 
-        // Envoyer l'email de vérification
         emailService.sendEmail(utilisateur.getEmail(), verificationToken.getToken());
 
-        // Générer le JWT (l'utilisateur peut se connecter mais certaines actions nécessiteront la vérification)
         String jwtToken = jwtService.generateToken(utilisateur.getEmail(), utilisateur.getId());
 
         return new AuthResponse(jwtToken, utilisateur);
     }
 
-    /**
-     * Connexion d'un utilisateur
-     */
-    public AuthResponse login(LoginRequest request) {
-        // Trouver l'utilisateur
-        Utilisateur utilisateur = utilisateurRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Email ou mot de passe incorrect"));
 
-        // Vérifier le mot de passe
+    public AuthResponse login(LoginRequest request) {
+
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Email incorrect"));
+
         if (!passwordEncoder.matches(request.getMotDePasse(), utilisateur.getMotDePasse())) {
-            throw new RuntimeException("Email ou mot de passe incorrect");
+            throw new RuntimeException("Mot de passe incorrect");
         }
 
-        // Optionnel : Bloquer si email non vérifié
-        // if (!utilisateur.getIsVerified()) {
-        //     throw new RuntimeException("Veuillez vérifier votre email avant de vous connecter");
-        // }
+        if (!utilisateur.getIsVerified()) {
+             throw new RuntimeException("Veuillez vérifier votre email avant de vous connecter");
+         }
 
-        // Générer le JWT
         String jwtToken = jwtService.generateToken(utilisateur.getEmail(), utilisateur.getId());
 
         return new AuthResponse(jwtToken, utilisateur);
     }
 
-    /**
-     * Vérifier l'email via le token
-     */
     public void verifyEmail(String token) {
-        // Trouver le token
+
         VerificationToken verificationToken = verificationTokenService.getToken(token)
                 .orElseThrow(() -> new RuntimeException("Token invalide"));
 
-        // Vérifier s'il n'est pas expiré
         if (!verificationTokenService.isTokenValid(verificationToken)) {
             throw new RuntimeException("Token expiré");
         }
 
-        // Marquer l'utilisateur comme vérifié
         Utilisateur utilisateur = verificationToken.getUtilisateur();
         utilisateur.setIsVerified(true);
         utilisateurRepository.save(utilisateur);

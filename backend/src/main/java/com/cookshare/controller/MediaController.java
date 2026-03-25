@@ -9,11 +9,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/media")
 @RequiredArgsConstructor
-@CrossOrigin (origins = "http:localhost:3000")
+@CrossOrigin (origins = "http:localhost:5173")
 public class MediaController {
 
     private final MediaService mediaService;
@@ -41,6 +42,21 @@ public class MediaController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/utilisateur/{utilisateurId}")
+    public ResponseEntity<?> uploadAvatarUtilisateur(
+            @PathVariable Long utilisateurId,
+            @RequestPart("file") MultipartFile file) {
+        try {
+            String url = mediaService.uploadAvatarForUtilisateur(utilisateurId, file);
+            return ResponseEntity.ok(Map.of("url", url));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 
 
 }

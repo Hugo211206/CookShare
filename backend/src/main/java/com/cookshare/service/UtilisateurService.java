@@ -16,18 +16,6 @@ public class UtilisateurService {
 
     private final UtilisateurRepository utilisateurRepository;
 
-    public Utilisateur creerUtilisateur(Utilisateur utilisateur) {
-        if (utilisateurRepository.existsByEmail(utilisateur.getEmail())) {
-            throw new RuntimeException("Cet email est déjà utilisé");
-        }
-
-        if (utilisateurRepository.existsByPseudo(utilisateur.getPseudo())) {
-            throw new RuntimeException("Ce pseudo est déjà utilisé");
-        }
-
-        return utilisateurRepository.save(utilisateur);
-    }
-
     public Utilisateur updateUtilisateur(Long id, Utilisateur utilisateurDetails) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'id : " + id));
@@ -56,9 +44,6 @@ public class UtilisateurService {
         return utilisateurRepository.findById(id);
     }
 
-    public Optional<Utilisateur> getUtilisateurByEmail(String email) {
-        return utilisateurRepository.findByEmail(email);
-    }
 
     public Optional<Utilisateur> getUtilisateurByPseudo(String pseudo) {
         return utilisateurRepository.findByPseudo(pseudo);

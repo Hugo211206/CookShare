@@ -12,7 +12,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/likes")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class LikeController {
 
     private final LikeService likeService;
