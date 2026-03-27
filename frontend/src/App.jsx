@@ -10,6 +10,7 @@ import ConfigPage from './pages/ConfigPage'
 import VerifyPage from './pages/VerifyPage'
 import CreateRecipePage from './pages/CreateRecipePage'
 import RecettePage from './pages/RecettePage'
+import UserProfilePage from './pages/UserProfilePage'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/config" element={<ProtectedRoute><ConfigPage /></ProtectedRoute>} />
           <Route path="/create" element={<ProtectedRoute><CreateRecipePage /></ProtectedRoute>} />
           <Route path="/recette/:id" element={<ProtectedRoute><RecettePage /></ProtectedRoute>} />
+          <Route path="/profil/:id" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
 
         </Routes>
       </BrowserRouter>

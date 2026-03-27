@@ -12,7 +12,7 @@ export default function ProfilePage() {
   const [recettes, setRecettes] = useState([])
   const [favoris, setFavoris] = useState([])
   const [liked, setLiked] = useState([])
-  const [activeTab, setActiveTab] = useState('recettes')
+  const [activeTab, setActiveTab] = useState('recettes, favoris')
   const [loading, setLoading] = useState(true)
   const called = useRef(false)
 
@@ -30,8 +30,8 @@ export default function ProfilePage() {
         ])
         setProfil(profilRes.data)
         setRecettes(recettesRes.data)
-        setFavoris(favorisRes.data)
-        setLiked(likedRes.data)
+        setFavoris(favorisRes.data.map(f => f.recette))
+        setLiked(likedRes.data.map(l => l.recette))
       } catch (err) {
         console.error(err)
       } finally {
@@ -166,25 +166,9 @@ export default function ProfilePage() {
             <p className="text-lg">Aucune recette</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             {currentList.map(recette => (
-              <div
-                key={recette.id}
-                onClick={() => navigate(`/recette/${recette.id}`)}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer">
-                <div className="relative h-32 bg-gray-100">
-                  {recette.medias?.[0]?.url ? (
-                    <img src={recette.medias[0].url} alt={recette.titre} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-pink-100">
-                      <span className="text-3xl">🍽️</span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-3">
-                  <h3 className="font-semibold text-gray-800 text-sm leading-snug">{recette.titre}</h3>
-                </div>
-              </div>
+              <RecipeCard key={recette.id} recette={recette} onClick={() => navigate(`/recette/${recette.id}`)} />
             ))}
           </div>
         )}

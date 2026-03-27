@@ -3,10 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import api from '../api/axios'
 import RecipeCard from '../components/RecipeCard'
+import { useAuth } from '../context/AuthContext'
 
 export default function MainPage() {
+  const { user } = useAuth()
   const [recettes, setRecettes] = useState([])
+  const [feed, setFeed] = useState([])
+  const [activeTab, setActiveTab] = useState('pourToi')
   const [loading, setLoading] = useState(true)
+  const [loadingFeed, setLoadingFeed] = useState(false)
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
 
@@ -17,9 +22,25 @@ export default function MainPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    if (activeTab !== 'abonnements') return
+    setLoadingFeed(true)
+    api.get(`/abonnements/feed?userId=${user.id}`)
+      .then(res => setFeed(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoadingFeed(false))
+  }, [activeTab, user.id])
+
   const filtered = recettes.filter(r =>
     r.titre?.toLowerCase().includes(search.toLowerCase())
   )
+
+  const filteredFeed = feed.filter(r =>
+    r.titre?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const isLoadingCurrent = activeTab === 'pourToi' ? loading : loadingFeed
+  const currentList = activeTab === 'pourToi' ? filtered : filteredFeed
 
   const toggleFavori = async (e, recetteId) => {
     e.stopPropagation()
@@ -63,22 +84,43 @@ export default function MainPage() {
             className="bg-transparent text-sm text-gray-700 outline-none flex-1 placeholder-gray-400"
           />
         </div>
+
+        <div className="flex mt-4 gap-1 bg-gray-100 rounded-2xl p-1">
+          <button
+            onClick={() => setActiveTab('pourToi')}
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'pourToi' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400'}`}>
+            Pour toi
+          </button>
+          <button
+            onClick={() => setActiveTab('abonnements')}
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'abonnements' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400'}`}>
+            Abonnements
+          </button>
+        </div>
       </div>
 
       <div className="px-5 pt-4">
 
-        {loading ? (
+        {isLoadingCurrent ? (
           <div className="flex justify-center py-20">
             <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : currentList.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
-            <p className="text-lg">Aucune recette trouvée</p>
+            {activeTab === 'abonnements' ? (
+              <>
+                <p className="text-3xl mb-3">👨‍🍳</p>
+                <p className="font-semibold text-gray-500">Aucune recette pour l'instant</p>
+                <p className="text-sm mt-1">Suis des chefs pour voir leurs recettes ici</p>
+              </>
+            ) : (
+              <p className="text-lg">Aucune recette trouvée</p>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-5 gap-2">
-            {filtered.map(recette => (
-              <RecipeCard key={recette.id} recette={recette} onClick={() => navigate(`/recette/${recette.id}`)}/>
+          <div className="grid grid-cols-5 gap-3">
+            {currentList.map(recette => (
+              <RecipeCard key={recette.id} recette={recette} onClick={() => navigate(`/recette/${recette.id}`)} />
             ))}
           </div>
         )}

@@ -208,7 +208,9 @@ export default function RecettePage() {
           </div>
 
           {recette.auteur && (
-            <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+            <div
+              className="flex items-center gap-3 pb-4 border-b border-gray-100 cursor-pointer"
+              onClick={() => navigate(`/profil/${recette.auteur.id}`)}>
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
                 style={{ background: 'linear-gradient(135deg, #FF6B35, #FF3CAC)' }}>
                 {recette.auteur.prenom?.[0]}{recette.auteur.nom?.[0]}

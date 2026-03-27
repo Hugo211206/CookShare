@@ -1,4 +1,12 @@
+import { useNavigate } from 'react-router-dom'
+
 export default function RecipeCard({ recette, onClick, onToggleFavori }) {
+  const navigate = useNavigate()
+
+  const handleAuteurClick = (e) => {
+    e.stopPropagation()
+    navigate(`/profil/${recette.auteur.id}`)
+  }
   return (
     <div
       onClick={onClick}
@@ -29,12 +37,14 @@ export default function RecipeCard({ recette, onClick, onToggleFavori }) {
       <div className="p-3">
         <h3 className="font-bold text-gray-800 text-sm leading-snug mb-1.5 line-clamp-2">{recette.titre}</h3>
         {recette.auteur && (
-          <div className="flex items-center gap-1.5">
+          <div
+            className="flex items-center gap-1.5 w-fit"
+            onClick={handleAuteurClick}>
             <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
               style={{ background: 'linear-gradient(135deg, #FF6B35, #FF3CAC)' }}>
               {recette.auteur.prenom?.[0]}{recette.auteur.nom?.[0]}
             </div>
-            <span className="text-xs text-gray-400">{recette.auteur.pseudo}</span>
+            <span className="text-xs text-gray-400 hover:text-orange-500 transition-colors">{recette.auteur.pseudo}</span>
           </div>
         )}
       </div>
