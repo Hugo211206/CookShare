@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const [favoris, setFavoris] = useState([])
   const [liked, setLiked] = useState([])
   const [activeTab, setActiveTab] = useState('recettes, favoris')
+  const [stats, setStats] = useState({ followers: 0, following: 0 })
   const [loading, setLoading] = useState(true)
   const called = useRef(false)
 
@@ -22,16 +23,18 @@ export default function ProfilePage() {
 
     const fetchAll = async () => {
       try {
-        const [profilRes, recettesRes, favorisRes, likedRes] = await Promise.all([
+        const [profilRes, recettesRes, favorisRes, likedRes, statsRes] = await Promise.all([
           api.get(`/utilisateurs/${user.id}`),
           api.get(`/recettes/auteur/${user.id}`),
           api.get(`/favoris/auteur/${user.id}`),
-          api.get(`/likes/utilisateur/${user.id}`)
+          api.get(`/likes/utilisateur/${user.id}`),
+          api.get(`/abonnements/${user.id}/stats`),
         ])
         setProfil(profilRes.data)
         setRecettes(recettesRes.data)
         setFavoris(favorisRes.data.map(f => f.recette))
         setLiked(likedRes.data.map(l => l.recette))
+        setStats(statsRes.data)
       } catch (err) {
         console.error(err)
       } finally {
@@ -106,7 +109,7 @@ export default function ProfilePage() {
               </svg>
               <span className="text-xl font-bold text-gray-800">{recettes.length}</span>
             </div>
-            <span className="text-xs text-gray-400 mt-1">Recipes</span>
+            <span className="text-xs text-gray-400 mt-1">Recettes</span>
           </div>
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-1">
@@ -114,9 +117,9 @@ export default function ProfilePage() {
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
                 <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
               </svg>
-              <span className="text-xl font-bold text-gray-800">0</span>
+              <span className="text-xl font-bold text-gray-800">{stats.followers}</span>
             </div>
-            <span className="text-xs text-gray-400 mt-1">Followers</span>
+            <span className="text-xs text-gray-400 mt-1">Abonnés</span>
           </div>
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-1">
@@ -124,9 +127,9 @@ export default function ProfilePage() {
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
                 <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
               </svg>
-              <span className="text-xl font-bold text-gray-800">0</span>
+              <span className="text-xl font-bold text-gray-800">{stats.following}</span>
             </div>
-            <span className="text-xs text-gray-400 mt-1">Following</span>
+            <span className="text-xs text-gray-400 mt-1">Abonnements</span>
           </div>
         </div>
       </div>
