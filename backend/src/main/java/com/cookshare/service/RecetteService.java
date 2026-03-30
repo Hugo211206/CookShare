@@ -126,4 +126,12 @@ public class RecetteService {
     public List<Recette> findByAuteurOrderByDatePublicationDesc(Utilisateur auteur) {
         return recetteRepository.findByAuteurOrderByDatePublicationDesc(auteur);
     }
+
+    public List<Recette> findByAuteurPseudo(String pseudo) {
+        return recetteRepository.findByAuteurPseudoContainingIgnoreCase(pseudo);
+    }
+
+    public List<Recette> findByIngredient(String nom) {
+        return recetteRepository.findByIngredientsIngredientNomContainingIgnoreCase(nom);
+    }
 }

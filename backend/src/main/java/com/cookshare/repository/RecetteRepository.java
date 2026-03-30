@@ -30,5 +30,9 @@ public interface RecetteRepository extends JpaRepository<Recette, Long> {
 
     List<Recette> findByAuteurOrderByDatePublicationDesc(Utilisateur auteur);
 
+    List<Recette> findByAuteurPseudoContainingIgnoreCase(String pseudo);
+
+    List<Recette> findByIngredientsIngredientNomContainingIgnoreCase(String nom);
+
 
 }

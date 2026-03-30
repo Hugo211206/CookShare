@@ -19,6 +19,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final RecetteService recetteService;
     private final UtilisateurService utilisateurService;
+    private final NotificationService notificationService;
 
 
     public boolean LikerRecette (Long recetteId, Long auteurId) {
@@ -38,6 +39,13 @@ public class LikeService {
             like.setAuteur(auteur);
             like.setRecette(recette);
             likeRepository.save(like);
+            notificationService.notifierLike(
+                    recette.getAuteur().getId(),
+                    auteur.getId(),
+                    auteur.getPseudo(),
+                    recette.getTitre(),
+                    recetteId
+            );
             return true;
         }
     }

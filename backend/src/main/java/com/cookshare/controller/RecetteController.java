@@ -114,4 +114,14 @@ public class RecetteController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/search/auteur")
+    public ResponseEntity<List<Recette>> searchByAuteur(@RequestParam String pseudo) {
+        return ResponseEntity.ok(recetteService.findByAuteurPseudo(pseudo));
+    }
+
+    @GetMapping("/search/ingredient")
+    public ResponseEntity<List<Recette>> searchByIngredient(@RequestParam String nom) {
+        return ResponseEntity.ok(recetteService.findByIngredient(nom));
+    }
 }

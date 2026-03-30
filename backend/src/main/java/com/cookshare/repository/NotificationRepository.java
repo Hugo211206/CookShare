@@ -1,4 +1,14 @@
 package com.cookshare.repository;
 
-public class NotificationRepository {
+import com.cookshare.entity.Notification;
+import com.cookshare.entity.Utilisateur;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface NotificationRepository extends JpaRepository<Notification, Long> {
+
+    List<Notification> findByDestinataireOrderByDateCreationDesc(Utilisateur destinataire);
+
+    long countByDestinataireAndLuFalse(Utilisateur destinataire);
 }

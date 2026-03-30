@@ -20,6 +20,7 @@ public class CommentaireService {
     private final CommentaireRepository commentaireRepository;
     private final RecetteService recetteService;
     private final UtilisateurService utilisateurService;
+    private final NotificationService notificationService;
 
     public Commentaire creerCommentaire(Long recetteId, Long auteurId, String contenu) {
         Recette recette = recetteService.findRecetteByID(recetteId)
@@ -33,7 +34,18 @@ public class CommentaireService {
         commentaire.setRecette(recette);
         commentaire.setAuteur(auteur);
 
-        return commentaireRepository.save(commentaire);
+        Commentaire saved = commentaireRepository.save(commentaire);
+
+        notificationService.notifierCommentaire(
+                recette.getAuteur().getId(),
+                auteur.getId(),
+                auteur.getPseudo(),
+                recette.getTitre(),
+                recetteId
+        );
+
+        return saved;
+
     }
 
     public void supprimerCommentaire(Long commentaireId, Long utilisateurId) {
