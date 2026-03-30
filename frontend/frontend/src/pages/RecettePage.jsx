@@ -19,22 +19,6 @@ export default function RecettePage() {
   const [sendingComment, setSendingComment] = useState(false)
   const called = useRef(false)
   const [mediaIndex, setMediaIndex] = useState(0)
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [cookMode, setCookMode] = useState(false)
-  const [cookTab, setCookTab] = useState('etapes')
-  const [checkedSteps, setCheckedSteps] = useState({})
-  const [checkedIngs, setCheckedIngs] = useState({})
-
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (!lightboxOpen) return
-      if (e.key === 'Escape') setLightboxOpen(false)
-      if (e.key === 'ArrowRight') setMediaIndex(prev => prev === recette.medias.length - 1 ? 0 : prev + 1)
-      if (e.key === 'ArrowLeft') setMediaIndex(prev => prev === 0 ? recette.medias.length - 1 : prev - 1)
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [lightboxOpen, recette?.medias?.length])
 
   useEffect(() => {
     if (called.current) return
@@ -131,15 +115,14 @@ export default function RecettePage() {
       {recette.medias[mediaIndex].type === 'VIDEO' ? (
         <video
           src={recette.medias[mediaIndex].url}
-          className="w-full h-full object-cover cursor-pointer"
-          onClick={() => setLightboxOpen(true)}
+          className="w-full h-full object-cover"
+          controls
         />
       ) : (
         <img
           src={recette.medias[mediaIndex].url}
           alt={recette.titre}
-          className="w-full h-full object-cover cursor-pointer"
-          onClick={() => setLightboxOpen(true)}
+          className="w-full h-full object-cover"
         />
       )}
 
@@ -252,30 +235,6 @@ export default function RecettePage() {
               </svg>
               <span className="text-sm font-semibold text-gray-400">{commentCount}</span>
             </div>
-            <button
-              onClick={async () => {
-                const url = window.location.href
-                const title = recette.titre
-                if (navigator.share) {
-                  await navigator.share({ title, url })
-                } else {
-                  await navigator.clipboard.writeText(url)
-                  alert('Lien copié !')
-                }
-              }}
-              className="flex items-center gap-2 ml-auto">
-              <svg width="22" height="22" fill="none" stroke="#9CA3AF" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-              </svg>
-            </button>
-            <button
-              onClick={() => { setCookMode(true); setCookTab('etapes') }}
-              className="flex items-center gap-2 px-4 py-2 rounded-2xl text-white text-sm font-semibold"
-              style={{ background: 'linear-gradient(135deg, #F25C05, #F29B30)' }}>
-              🍳 Cuisiner
-            </button>
           </div>
         </div>
 
@@ -303,16 +262,7 @@ export default function RecettePage() {
         {recette.instructions && (
           <div className="bg-white rounded-3xl p-5 shadow-sm mb-4">
             <h2 className="text-base font-bold text-gray-800 mb-3">Instructions</h2>
-            <div className="flex flex-col gap-3">
-              {recette.instructions.split('\n').filter(s => s.trim()).map((etape, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-orange-50 border-2 border-orange-200 flex-shrink-0 flex items-center justify-center text-xs font-bold text-orange-400 mt-0.5">
-                    {i + 1}
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed flex-1 pt-0.5">{etape.trim()}</p>
-                </div>
-              ))}
-            </div>
+            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{recette.instructions}</p>
           </div>
         )}
 
@@ -379,200 +329,6 @@ export default function RecettePage() {
           )}
         </div>
       </div>
-
-      {/* Lightbox */}
-      {/* ── Cook Mode Modal ── */}
-      {cookMode && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
-
-          {/* Header */}
-          <div className="bg-white px-5 pt-6 pb-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-            <div>
-              <p className="text-xs text-gray-400 font-medium">Mode cuisine</p>
-              <h2 className="text-lg font-bold text-gray-800 leading-tight truncate max-w-[220px]">{recette.titre}</h2>
-            </div>
-            <button
-              onClick={() => setCookMode(false)}
-              className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" viewBox="0 0 24 24">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Onglets */}
-          <div className="flex mx-5 mt-4 bg-white rounded-2xl overflow-hidden shadow-sm flex-shrink-0">
-            <button
-              onClick={() => setCookTab('etapes')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all ${cookTab === 'etapes' ? 'text-white' : 'text-gray-400'}`}
-              style={cookTab === 'etapes' ? { background: 'linear-gradient(135deg, #F25C05, #F29B30)' } : {}}>
-              📋 Étapes
-            </button>
-            <button
-              onClick={() => setCookTab('ingredients')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all ${cookTab === 'ingredients' ? 'text-white' : 'text-gray-400'}`}
-              style={cookTab === 'ingredients' ? { background: 'linear-gradient(135deg, #F25C05, #F29B30)' } : {}}>
-              🛒 Ingrédients
-            </button>
-          </div>
-
-          {/* Contenu scrollable */}
-          <div className="flex-1 overflow-y-auto px-5 py-4">
-
-            {cookTab === 'etapes' ? (
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                    {recette.instructions?.split('\n').filter(s => s.trim()).length} étapes
-                  </p>
-                  <button
-                    onClick={() => setCheckedSteps({})}
-                    className="text-xs text-orange-500 font-semibold">
-                    Réinitialiser
-                  </button>
-                </div>
-                <div className="divide-y divide-gray-50">
-                  {recette.instructions?.split('\n').filter(s => s.trim()).map((etape, i) => {
-                    const isDone = checkedSteps[i]
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => setCheckedSteps(prev => ({ ...prev, [i]: !prev[i] }))}
-                        className="w-full flex items-start gap-3 px-4 py-4 text-left hover:bg-gray-50 transition-colors">
-                        <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold transition-all mt-0.5 ${
-                          isDone ? 'bg-orange-400 text-white' : 'bg-orange-50 text-orange-400 border-2 border-orange-200'
-                        }`}>
-                          {isDone
-                            ? <svg width="12" height="12" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
-                            : i + 1
-                          }
-                        </div>
-                        <p className={`text-sm leading-relaxed flex-1 pt-0.5 transition-all ${isDone ? 'line-through text-gray-300' : 'text-gray-600'}`}>
-                          {etape.trim()}
-                        </p>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                    {recette.ingredients?.length} ingrédients
-                  </p>
-                  <button
-                    onClick={() => setCheckedIngs({})}
-                    className="text-xs text-orange-500 font-semibold">
-                    Tout décocher
-                  </button>
-                </div>
-                <div className="divide-y divide-gray-50">
-                  {recette.ingredients?.map((ing, i) => {
-                    const isDone = checkedIngs[i]
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => setCheckedIngs(prev => ({ ...prev, [i]: !prev[i] }))}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors">
-                        <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${isDone ? 'border-orange-400 bg-orange-400' : 'border-gray-200'}`}>
-                          {isDone && (
-                            <svg width="10" height="10" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                        </div>
-                        <span className={`text-sm flex-1 transition-all ${isDone ? 'line-through text-gray-300' : 'text-gray-700'}`}>
-                          {ing.ingredient?.nom}
-                        </span>
-                        <span className={`text-sm font-semibold transition-all ${isDone ? 'text-gray-300' : 'text-orange-500'}`}>
-                          {ing.valeur} {ing.unite}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {lightboxOpen && recette.medias?.length > 0 && (
-        <div
-          className="fixed inset-0 z-50 bg-black flex items-center justify-center"
-          onClick={() => setLightboxOpen(false)}>
-
-          {/* Fermer */}
-          <button
-            className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center z-10"
-            onClick={() => setLightboxOpen(false)}>
-            <svg width="20" height="20" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-
-          {/* Compteur */}
-          {recette.medias.length > 1 && (
-            <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-white/10 rounded-full px-3 py-1">
-              <span className="text-white text-sm font-medium">{mediaIndex + 1} / {recette.medias.length}</span>
-            </div>
-          )}
-
-          {/* Media */}
-          <div
-            className="w-full h-full flex items-center justify-center px-12"
-            onClick={e => e.stopPropagation()}>
-            {recette.medias[mediaIndex].type === 'VIDEO' ? (
-              <video
-                src={recette.medias[mediaIndex].url}
-                className="max-w-full max-h-full rounded-xl"
-                controls
-                autoPlay
-              />
-            ) : (
-              <img
-                src={recette.medias[mediaIndex].url}
-                alt={recette.titre}
-                className="max-w-full max-h-full object-contain rounded-xl"
-              />
-            )}
-          </div>
-
-          {/* Flèches */}
-          {recette.medias.length > 1 && (
-            <>
-              <button
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
-                onClick={e => { e.stopPropagation(); setMediaIndex(prev => prev === 0 ? recette.medias.length - 1 : prev - 1) }}>
-                <svg width="20" height="20" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <button
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
-                onClick={e => { e.stopPropagation(); setMediaIndex(prev => prev === recette.medias.length - 1 ? 0 : prev + 1) }}>
-                <svg width="20" height="20" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-            </>
-          )}
-
-          {/* Dots */}
-          {recette.medias.length > 1 && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-              {recette.medias.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={e => { e.stopPropagation(); setMediaIndex(i) }}
-                  className={`rounded-full transition-all ${i === mediaIndex ? 'w-4 h-2 bg-white' : 'w-2 h-2 bg-white/40'}`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       <Navbar />
     </div>

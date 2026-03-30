@@ -11,7 +11,6 @@ import VerifyPage from './pages/VerifyPage'
 import CreateRecipePage from './pages/CreateRecipePage'
 import RecettePage from './pages/RecettePage'
 import UserProfilePage from './pages/UserProfilePage'
-import NotificationsPage from './pages/NotificationsPage'
 
 function App() {
   return (
@@ -29,7 +28,6 @@ function App() {
           <Route path="/create" element={<ProtectedRoute><CreateRecipePage /></ProtectedRoute>} />
           <Route path="/recette/:id" element={<ProtectedRoute><RecettePage /></ProtectedRoute>} />
           <Route path="/profil/:id" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
-          <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
         </Routes>
       </BrowserRouter>
