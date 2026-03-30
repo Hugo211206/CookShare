@@ -17,10 +17,15 @@ export default function ExplorePage() {
   const { user } = useAuth()
   const [query, setQuery] = useState('')
   const [cuisines, setCuisines] = useState([])
+  const [allRecettes, setAllRecettes] = useState([])
   const [recommended, setRecommended] = useState([])
   const [searchResults, setSearchResults] = useState([])
   const [searching, setSearching] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [filterType, setFilterType] = useState(null)
+  const [filterDiff, setFilterDiff] = useState(null)
+  const [sortBy, setSortBy] = useState('date')
+  const [showFilters, setShowFilters] = useState(false)
   const called = useRef(false)
   const searchTimeout = useRef(null)
 
@@ -42,8 +47,8 @@ export default function ExplorePage() {
         const favoris = favorisRes.data
         const likes = likesRes.data
         const allRecettes = allRecettesRes.data
+        setAllRecettes(allRecettes)
 
-        // Extraire les cuisineIds et typePlats des favoris et likes
         const cuisineCount = {}
         const typePlatCount = {}
 
@@ -57,7 +62,6 @@ export default function ExplorePage() {
           }
         })
 
-        // Cuisines et types préférés
         const topCuisines = Object.entries(cuisineCount)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 3)
@@ -68,19 +72,16 @@ export default function ExplorePage() {
           .slice(0, 2)
           .map(([type]) => type)
 
-        // IDs déjà vus (favoris + likes)
         const seenIds = new Set([
           ...favoris.map(f => f.recette?.id),
           ...likes.map(l => l.recette?.id)
         ])
 
-        // Filtrer les recettes recommandées
         let recs = allRecettes.filter(r =>
           !seenIds.has(r.id) &&
           (topCuisines.includes(r.cuisine?.id) || topTypes.includes(r.typePlat))
         )
 
-        // Si pas assez de recs, compléter avec les autres recettes
         if (recs.length < 4) {
           const others = allRecettes.filter(r => !seenIds.has(r.id) && !recs.find(rec => rec.id === r.id))
           recs = [...recs, ...others].slice(0, 8)
@@ -97,6 +98,15 @@ export default function ExplorePage() {
     fetchData()
   }, [])
 
+  const applyFilters = (list) => {
+    let result = [...list]
+    if (filterType) result = result.filter(r => r.typePlat === filterType)
+    if (filterDiff) result = result.filter(r => r.difficulte === filterDiff)
+    if (sortBy === 'popularite') result.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0))
+    else result.sort((a, b) => new Date(b.datePublication) - new Date(a.datePublication))
+    return result
+  }
+
   const handleSearch = (value) => {
     setQuery(value)
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -110,8 +120,31 @@ export default function ExplorePage() {
     setSearching(true)
     searchTimeout.current = setTimeout(async () => {
       try {
-        const res = await api.get(`/recettes/search?query=${value}`)
-        setSearchResults(res.data)
+        const [titreRes, auteurRes, ingredientRes] = await Promise.allSettled([
+          api.get(`/recettes/search?titre=${value}`),
+          api.get(`/recettes/search/auteur?pseudo=${value}`),
+          api.get(`/recettes/search/ingredient?nom=${value}`),
+        ])
+
+        const titreIds = new Set((titreRes.status === 'fulfilled' ? titreRes.value.data : []).map(r => r.id))
+        const auteurIds = new Set((auteurRes.status === 'fulfilled' ? auteurRes.value.data : []).map(r => r.id))
+        const ingredientIds = new Set((ingredientRes.status === 'fulfilled' ? ingredientRes.value.data : []).map(r => r.id))
+
+        const all = [
+          ...(titreRes.status === 'fulfilled' ? titreRes.value.data : []),
+          ...(auteurRes.status === 'fulfilled' ? auteurRes.value.data : []),
+          ...(ingredientRes.status === 'fulfilled' ? ingredientRes.value.data : []),
+        ]
+        const seen = new Set()
+        const merged = all
+          .filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true })
+          .map(r => ({
+            ...r,
+            _matchTitre: titreIds.has(r.id),
+            _matchAuteur: auteurIds.has(r.id),
+            _matchIngredient: ingredientIds.has(r.id),
+          }))
+        setSearchResults(merged)
       } catch {
         setSearchResults([])
       } finally {
@@ -121,82 +154,163 @@ export default function ExplorePage() {
   }
 
   const handleCategory = async (typePlat) => {
+    setFilterType(typePlat)
+    setQuery(typePlat)
     try {
       const res = await api.get(`/recettes/type/${typePlat}`)
       setSearchResults(res.data)
-      setQuery(typePlat)
     } catch (err) {
       console.error(err)
     }
   }
 
-  const handleCuisine = async (cuisineId) => {
+  const handleCuisine = async (cuisineId, cuisineNom) => {
+    setQuery(cuisineNom)
     try {
       const res = await api.get(`/recettes/cuisine/${cuisineId}`)
       setSearchResults(res.data)
-      setQuery('cuisine')
     } catch (err) {
       console.error(err)
     }
   }
 
+  const clearFilters = () => {
+    setFilterType(null)
+    setFilterDiff(null)
+    setSortBy('date')
+  }
+
+  const activeFilterCount = [filterType, filterDiff, sortBy !== 'date' ? sortBy : null].filter(Boolean).length
+  const displayedResults = applyFilters(searchResults)
   const showResults = query.trim().length > 0
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
 
-      {/* Header */}
       <div className="bg-white px-5 pt-12 pb-4 sticky top-0 z-40 border-b border-gray-100">
         <h1 className="text-xl font-bold text-gray-800 mb-4">Explore Recipes</h1>
 
-        {/* Search */}
-        <div className="flex items-center bg-gray-100 rounded-2xl px-4 py-3 gap-3">
-          <svg width="18" height="18" fill="none" stroke="#9CA3AF" strokeWidth="2" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search by ingredient, cuisine, or dish..."
-            value={query}
-            onChange={e => handleSearch(e.target.value)}
-            className="bg-transparent text-sm text-gray-700 outline-none flex-1 placeholder-gray-400"
-          />
-          {query && (
-            <button onClick={() => { setQuery(''); setSearchResults([]) }}>
-              <svg width="16" height="16" fill="none" stroke="#9CA3AF" strokeWidth="2" viewBox="0 0 24 24">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          )}
+        <div className="flex gap-2">
+          <div className="flex items-center bg-gray-100 rounded-2xl px-4 py-3 gap-3 flex-1">
+            <svg width="18" height="18" fill="none" stroke="#9CA3AF" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by ingredient, cuisine..."
+              value={query}
+              onChange={e => handleSearch(e.target.value)}
+              className="bg-transparent text-sm text-gray-700 outline-none flex-1 placeholder-gray-400"
+            />
+            {query && (
+              <button onClick={() => { setQuery(''); setSearchResults([]) }}>
+                <svg width="16" height="16" fill="none" stroke="#9CA3AF" strokeWidth="2" viewBox="0 0 24 24">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => setShowFilters(v => !v)}
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center relative flex-shrink-0 transition-all ${showFilters ? 'text-white' : 'bg-gray-100 text-gray-500'}`}
+            style={showFilters ? { background: 'linear-gradient(135deg, #F25C05, #F29B30)' } : {}}>
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
+            </svg>
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </div>
+
+        {showFilters && (
+          <div className="mt-3 space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-gray-400 mb-2">Type de plat</p>
+              <div className="flex gap-2 flex-wrap">
+                {TYPE_PLATS.map(t => (
+                  <button
+                    key={t.typePlat}
+                    onClick={() => setFilterType(filterType === t.typePlat ? null : t.typePlat)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterType === t.typePlat ? 'text-white' : 'bg-gray-100 text-gray-500'}`}
+                    style={filterType === t.typePlat ? { background: 'linear-gradient(135deg, #F25C05, #F29B30)' } : {}}>
+                    {t.emoji} {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 mb-2">Difficulté</p>
+              <div className="flex gap-2">
+                {[['FACILE', '🟢'], ['MOYEN', '🟠'], ['DIFFICILE', '🔴']].map(([d, emoji]) => (
+                  <button
+                    key={d}
+                    onClick={() => setFilterDiff(filterDiff === d ? null : d)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filterDiff === d ? 'text-white' : 'bg-gray-100 text-gray-500'}`}
+                    style={filterDiff === d ? { background: 'linear-gradient(135deg, #F25C05, #F29B30)' } : {}}>
+                    {emoji} {d.charAt(0) + d.slice(1).toLowerCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 mb-2">Trier par</p>
+              <div className="flex gap-2">
+                {[['date', '🕐 Date'], ['popularite', '🔥 Popularité']].map(([val, label]) => (
+                  <button
+                    key={val}
+                    onClick={() => setSortBy(val)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${sortBy === val ? 'text-white' : 'bg-gray-100 text-gray-500'}`}
+                    style={sortBy === val ? { background: 'linear-gradient(135deg, #F25C05, #F29B30)' } : {}}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {activeFilterCount > 0 && (
+              <button onClick={clearFilters} className="text-xs text-red-400 font-semibold">
+                Effacer tous les filtres
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="px-5 pt-4">
 
-        {/* Search Results */}
         {showResults ? (
           <div>
-            <h2 className="text-base font-bold text-gray-700 mb-3">
-              {searching ? 'Recherche...' : `${searchResults.length} résultat(s)`}
-            </h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-bold text-gray-700">
+                {searching ? 'Recherche...' : `${displayedResults.length} résultat(s)`}
+              </h2>
+              {activeFilterCount > 0 && (
+                <button onClick={clearFilters} className="text-xs text-orange-500 font-semibold">
+                  Effacer filtres
+                </button>
+              )}
+            </div>
             {searching ? (
               <div className="flex justify-center py-10">
                 <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
               </div>
-            ) : searchResults.length === 0 ? (
+            ) : displayedResults.length === 0 ? (
               <p className="text-center text-gray-400 py-10">Aucune recette trouvée</p>
             ) : (
-              <div className="grid grid-cols-2 gap-4">
-                {searchResults.map(recette => (
-                  <RecipeCard key={recette.id} recette={recette} onClick={() => navigate(`/recette/${recette.id}`)} />
+              <div className="grid grid-cols-5 gap-4">
+                {displayedResults.map(recette => (
+                  <div key={recette.id} className="relative">
+                    <RecipeCard recette={recette} onClick={() => navigate(`/recette/${recette.id}`)} />
+                  </div>
                 ))}
               </div>
             )}
           </div>
         ) : (
           <>
-            {/* Cuisines */}
                 <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                 <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" viewBox="0 0 24 24">
@@ -212,7 +326,7 @@ export default function ExplorePage() {
             return (
                 <button
                 key={cuisine.id}
-                onClick={() => handleCuisine(cuisine.id)}
+                onClick={() => handleCuisine(cuisine.id, cuisine.nom)}
                 className="flex flex-col items-center justify-center h-12 rounded-2xl text-white"
                 style={{ backgroundColor: colors[i % colors.length] }}>
                 <span className="text-2xl mb-1"></span>
@@ -223,7 +337,6 @@ export default function ExplorePage() {
             </div>
             </div>
 
-            {/* Type de plat */}
                 <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                 <svg width="18" height="18" fill="none" stroke="#374151" strokeWidth="2" viewBox="0 0 24 24">
@@ -245,7 +358,6 @@ export default function ExplorePage() {
             </div>
             </div>
 
-            {/* Recommended */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <svg width="18" height="18" fill="none" stroke="#FF6B35" strokeWidth="2" viewBox="0 0 24 24">
@@ -260,7 +372,7 @@ export default function ExplorePage() {
               ) : recommended.length === 0 ? (
                 <p className="text-center text-gray-400 py-6 text-sm">Likez et sauvegardez des recettes pour des recommandations personnalisées !</p>
               ) : (
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   {recommended.map(recette => (
                     <RecipeCard key={recette.id} recette={recette} onClick={() => navigate(`/recette/${recette.id}`)} />
                   ))}
@@ -270,7 +382,6 @@ export default function ExplorePage() {
           </>
         )}
       </div>
-
       <Navbar />
     </div>
   )
