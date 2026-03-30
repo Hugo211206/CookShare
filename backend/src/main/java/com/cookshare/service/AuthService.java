@@ -38,13 +38,17 @@ public class AuthService {
         utilisateur.setPrenom(request.getPrenom());
         utilisateur.setEmail(request.getEmail());
         utilisateur.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
-        utilisateur.setIsVerified(false);
+        utilisateur.setIsVerified(true);
 
         utilisateur = utilisateurRepository.save(utilisateur);
 
         VerificationToken verificationToken = verificationTokenService.createVerificationToken(utilisateur);
 
-        emailService.sendEmail(utilisateur.getEmail(), verificationToken.getToken());
+        try {
+            emailService.sendEmail(utilisateur.getEmail(), verificationToken.getToken());
+        } catch (Exception e) {
+            System.err.println("Erreur envoi email : " + e.getMessage());
+        }
 
         String jwtToken = jwtService.generateToken(utilisateur.getEmail(), utilisateur.getId());
 
