@@ -121,7 +121,7 @@ export default function CreateRecipePage() {
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
-        <h1 className="text-lg font-bold text-gray-800">Create Recipe</h1>
+        <h1 className="text-lg font-bold text-gray-800">Creer Recette</h1>
         {step < 3 ? (
           <button
             onClick={() => setStep(s => s + 1)}
@@ -163,7 +163,7 @@ export default function CreateRecipePage() {
         {step === 1 && (
           <div className="flex flex-col gap-5">
             <div>
-              <label className="text-sm font-semibold text-gray-600 mb-2 block">Recipe Photo</label>
+              <label className="text-sm font-semibold text-gray-600 mb-2 block">Photo</label>
               <label className="block cursor-pointer">
                 <input type="file" accept="image/*,video/*" multiple onChange={handlePhoto} className="hidden" />
                 <div className={`min-h-70 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all ${photoPreviews.length > 0 ? 'border-orange-300 p-2' : 'border-gray-300 bg-gray-100'}`}>
@@ -208,7 +208,7 @@ export default function CreateRecipePage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-600">Recipe Title</label>
+              <label className="text-sm font-semibold text-gray-600">Titre</label>
               <input
                 type="text"
                 placeholder="e.g., Chocolate Chip Cookies"

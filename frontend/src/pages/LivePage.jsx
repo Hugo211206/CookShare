@@ -124,7 +124,6 @@ export default function LivePage() {
   )
 }
 
-// Composants définis plus bas — on les remplit aux étapes suivantes
 function VueListe({ sessions, setSessions, user, onRejoindre }) {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ titre: ''})
@@ -214,7 +213,6 @@ function VueListe({ sessions, setSessions, user, onRejoindre }) {
             </button>
           )}
 
-          {/* Bouton Terminer visible uniquement pour l'hôte d'un live EN COURS */}
           {isHote && enCours && (
             <button
               onClick={handleTerminer}
@@ -320,7 +318,6 @@ function VueSalon({ session, user, isHote }) {
   const localAudioTrack = useRef(null)
   const videoContainerRef = useRef(null)
 
-  // WebSocket chat
   useEffect(() => {
     const token = localStorage.getItem('token')
     const client = new Client({
@@ -403,7 +400,6 @@ function VueSalon({ session, user, isHote }) {
   return (
     <div className="flex flex-col bg-black" style={{ height: 'calc(100vh - 73px)' }}>
 
-      {/* Zone vidéo — plein écran si chat masqué */}
       <div
         ref={videoContainerRef}
         className="relative bg-black transition-all duration-300"
@@ -420,9 +416,7 @@ function VueSalon({ session, user, isHote }) {
           <span className="text-white text-xs font-bold tracking-wide">LIVE</span>
         </div>
 
-        {/* Boutons en haut à droite */}
         <div className="absolute top-3 right-3 flex items-center gap-2">
-          {/* Toggle chat */}
           <button
             onClick={() => setChatVisible(v => !v)}
             className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
@@ -436,7 +430,6 @@ function VueSalon({ session, user, isHote }) {
               </svg>
             )}
           </button>
-          {/* Plein écran */}
           <button
             onClick={toggleFullscreen}
             className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
@@ -447,7 +440,6 @@ function VueSalon({ session, user, isHote }) {
           </button>
         </div>
 
-        {/* Pseudo hôte pour les viewers */}
         {!isHote && (
           <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
             <span className="text-white text-xs font-semibold">@{session.hote?.pseudo}</span>
@@ -455,7 +447,6 @@ function VueSalon({ session, user, isHote }) {
         )}
       </div>
 
-      {/* Chat — masquable */}
       {chatVisible && (
         <div className="flex flex-col flex-1 bg-white overflow-hidden">
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">

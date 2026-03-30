@@ -274,7 +274,7 @@ export default function RecettePage() {
               onClick={() => { setCookMode(true); setCookTab('etapes') }}
               className="flex items-center gap-2 px-4 py-2 rounded-2xl text-white text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg, #F25C05, #F29B30)' }}>
-              🍳 Cuisiner
+              Cuisiner
             </button>
           </div>
         </div>
@@ -380,12 +380,10 @@ export default function RecettePage() {
         </div>
       </div>
 
-      {/* Lightbox */}
-      {/* ── Cook Mode Modal ── */}
+
       {cookMode && (
         <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
 
-          {/* Header */}
           <div className="bg-white px-5 pt-6 pb-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
             <div>
               <p className="text-xs text-gray-400 font-medium">Mode cuisine</p>
@@ -400,7 +398,6 @@ export default function RecettePage() {
             </button>
           </div>
 
-          {/* Onglets */}
           <div className="flex mx-5 mt-4 bg-white rounded-2xl overflow-hidden shadow-sm flex-shrink-0">
             <button
               onClick={() => setCookTab('etapes')}
@@ -416,7 +413,6 @@ export default function RecettePage() {
             </button>
           </div>
 
-          {/* Contenu scrollable */}
           <div className="flex-1 overflow-y-auto px-5 py-4">
 
             {cookTab === 'etapes' ? (
@@ -503,7 +499,6 @@ export default function RecettePage() {
           className="fixed inset-0 z-50 bg-black flex items-center justify-center"
           onClick={() => setLightboxOpen(false)}>
 
-          {/* Fermer */}
           <button
             className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center z-10"
             onClick={() => setLightboxOpen(false)}>
@@ -512,14 +507,12 @@ export default function RecettePage() {
             </svg>
           </button>
 
-          {/* Compteur */}
           {recette.medias.length > 1 && (
             <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-white/10 rounded-full px-3 py-1">
               <span className="text-white text-sm font-medium">{mediaIndex + 1} / {recette.medias.length}</span>
             </div>
           )}
 
-          {/* Media */}
           <div
             className="w-full h-full flex items-center justify-center px-12"
             onClick={e => e.stopPropagation()}>
@@ -539,7 +532,6 @@ export default function RecettePage() {
             )}
           </div>
 
-          {/* Flèches */}
           {recette.medias.length > 1 && (
             <>
               <button
@@ -559,7 +551,6 @@ export default function RecettePage() {
             </>
           )}
 
-          {/* Dots */}
           {recette.medias.length > 1 && (
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
               {recette.medias.map((_, i) => (

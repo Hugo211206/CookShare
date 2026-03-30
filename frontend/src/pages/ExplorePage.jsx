@@ -188,7 +188,7 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-gray-50 pb-24">
 
       <div className="bg-white px-5 pt-12 pb-4 sticky top-0 z-40 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-gray-800 mb-4">Explore Recipes</h1>
+        <h1 className="text-xl font-bold text-gray-800 mb-4">Explorer des recettes</h1>
 
         <div className="flex gap-2">
           <div className="flex items-center bg-gray-100 rounded-2xl px-4 py-3 gap-3 flex-1">
