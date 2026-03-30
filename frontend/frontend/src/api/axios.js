@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: 'https://cookshare-production-0106.up.railway.app/api',
   headers: {
     'Content-Type': 'application/json',
   },

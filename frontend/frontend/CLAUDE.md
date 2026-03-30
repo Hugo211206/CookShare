@@ -164,8 +164,6 @@ TypePlat       : ENTREE | PLAT | DESSERT | SNACK
 La `LivePage` est la fonctionnalité **différenciante** du projet. Elle doit permettre :
 
 1. **Proposer une session** — un utilisateur peut mettre une de ses recettes en session live
-2. **Rejoindre une session** — les membres soumettent une demande de participation
-3. **Visioconférence intégrée** — outil de vidéo en temps réel (à intégrer : WebRTC ou SDK tiers)
 4. **Chat en temps réel** — fenêtre de messagerie pendant la session (WebSocket ou SSE)
 
 > Pour le MVP, cette fonctionnalité est **gratuite** pour stimuler l'adoption.
